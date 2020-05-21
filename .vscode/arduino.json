@@ -1,0 +1,6 @@
+{
+    "board": "arduino:avr:uno",
+    "port": "COM9",
+    "programmer": "AVR ISP",
+    "sketch": "plantSense_arduino\\plantSense_arduino.ino"
+}
