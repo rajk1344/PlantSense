@@ -37,6 +37,10 @@ if(Serial.available()> 0){
     
     userInput = Serial.read();               // read user input
       
+      if(userInput == 't'){
+            Serial.print('t');
+      }
+      
       if(userInput == 'g'){                  // if we get expected value 
             sensor_1.requestTemperatures();
             sensor_2.requestTemperatures();
@@ -44,10 +48,6 @@ if(Serial.available()> 0){
             Serial.print(sensor_1.getTempCByIndex(0));
             Serial.print(',');
             Serial.print(sensor_2.getTempCByIndex(0));
-
-
-
-            
       } // if user input 'g' 
-  } // Serial.available
+} // Serial.available
 } // Void Loop

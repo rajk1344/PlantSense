@@ -1,4 +1,5 @@
 from time import time, ctime, gmtime, strftime
+import time
 
 import matplotlib
 from matplotlib import style
@@ -17,6 +18,15 @@ import tkinter.ttk as ttk
 
 import csv
 
+matplotlib.use("TkAgg")
+
+port = ''
+
+running = False
+test = False
+
+data = []
+
 
 def animate(i):
     arr = []
@@ -27,7 +37,6 @@ def animate(i):
     a.clear()
     a.set_ylim(0, 50)
     a.plot(arr)
-
 
 def scanning():
     if running:  # Only do this if the Stop button has not been clicked
@@ -46,29 +55,7 @@ def scanning():
 
         data.append([strftime("%d-%b-%Y-%H-%M-%S", gmtime()), x1, x2])
 
-        # x = 0
-        # t = time()
-        # if arduinoData is not None:
-        #     x = float(arduinoData)
-        #     t = time()
-
-        # data.append([strftime("%d-%b-%Y-%H-%M-%S", gmtime()),x])
-        # print(x)
-
-        # for ADC conversion
-        # x = 0
-        # t = time()
-        # if arduinoData is not None:
-        #     x = float(arduinoData)
-        #     t = time()
-
-        # data.append([strftime("%d-%b-%Y-%H-%M-%S", gmtime()),
-        #              (((x/1023)*5) - .5)*100])
-        # print((((x/1023)*5) - .5)*100)
-
-    # After 1 second, call scanning again (create a recursive loop)
     window.after(1000, scanning)
-
 
 def serial_ports():
     arr = serial.tools.list_ports.comports()
@@ -79,23 +66,19 @@ def serial_ports():
 
     return ports
 
-
-def on_select(event=None):
-    ser = cb.get()
-    print(ser)
-
+def port_select(event=None):
+    global port
+    port = cb.get()
 
 def start():
     """Enable scanning by setting the global flag to True."""
     global running
     running = True
 
-
 def stop():
     """Stop scanning by setting the global flag to False."""
     global running
     running = False
-
 
 def save():
     destination = filedialog.askdirectory()
@@ -105,44 +88,52 @@ def save():
         for point in data:
             writer.writerow(point)
 
-
-matplotlib.use("TkAgg")
-
-ser = serial.Serial('COM9', baudrate=9600, timeout=1)
-
-running = False
-
-data = []
+def connect():
+    global ser
+    print(port)
+    ser = serial.Serial(port, baudrate=9600, timeout=1)
 
 style.use("dark_background")
 
-f = Figure(figsize=(8, 6), dpi=100)
+f = Figure(figsize=(4, 4), dpi=100)
 a = f.add_subplot(111)
 
 window = Tk()
 window.title("PlantSense")
-window.geometry('800x800')
-lbl = Label(window, text="PlantSense")
-lbl.grid()
+window.geometry('800x500') 
 
+#labels
+title_lbl = Label(window, text="PlantSense")
+data_lbl = Label(window, text="Data Collection:")
+connect_lbl = Label(window, text="Arduino COM Port:")
+
+#buttons
 start = Button(window, text="Start Scan", command=start)
 stop = Button(window, text="Stop", command=stop)
 save = Button(window, text="Save", command=save)
+connect = Button(window, text="Connect", command=connect)
 
+#combobox
 cb = ttk.Combobox(window, values=serial_ports())
 
-start.grid()
-stop.grid()
-save.grid()
+#snapping to grid
+title_lbl.grid(row=0, column=0, columnspan = 4)
+data_lbl.grid(row=1, column=1)
+connect_lbl.grid(row=2, column=1)
 
-cb.grid()
+start.grid(row=1, column=2)
+stop.grid(row=1, column=3)
+save.grid(row=1, column=4)
+
+connect.grid(row=2, column=3)
+cb.grid(row=2, column=2)
 
 # assign function to combobox
-cb.bind('<<ComboboxSelected>>', on_select)
+cb.bind('<<ComboboxSelected>>', port_select)
 
 canvas = FigureCanvasTkAgg(f, master=window)
 canvas.draw()
-canvas.get_tk_widget().grid()
+canvas.get_tk_widget().grid(row=1, column=0, rowspan=2)
 
 window.after(1000, scanning)  # After 1 second, call scanning
 ani = animation.FuncAnimation(f, animate, interval=1000)
