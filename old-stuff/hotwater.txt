@@ -1,0 +1,83 @@
+
+
+--------------------------------------------------------------------------------
+<hotwater><code>
+
+float hotTankTemperature = 0.; // temperature of the water measured on the sensor on the pipe from HOT water tank
+
+float coldTankTemperature = 0.; // temperature of the water measured on the sensor on the pipe from COLD water tank
+
+float mixedTemperature = 0.; // temperature of the water measured on the sensor on the pipe just past the mixer
+
+float motorToleranceDegreeDelta = 3.; // positive real number - temperature 2-5 degrees to use avoiding that the motor tries to move the mixer past the stop
+
+bool isMixerHottest; // true if mixer reached hottest position
+
+bool isMixerColdest; // true if mixer reached coldest position
+
+isMixerHottest == ( MixedTemperature > HotTankTemperature - MotorToleranceDegreeDelta )
+
+isMixerColdest == ( MixedTemperature < ColdTankTemperature + MotorToleranceDegreeDelta )
+
+
+
+if ( [PRESSUP] == true   && IsMixerHottest == falser  { do whatever }
+
+if ( [PRESSDOWN ] == true   && IsMixerColdest == false.) { do whatever }
+
+
+
+
+----
+
+code for the negative exponential step
+
+ //Command all devices on bus to read temperature
+    sensors.requestTemperatures();
+    float tempcurrent = sensors.getTempF(Probe01);
+    Serial.print("Probe 01 temperature is:   ");
+    printTemperature(Probe01);
+    Serial.println();
+    popup(tempcurrent);
+    float temperatureDifference = abs(finalTemperature - tempcurrent);
+  while(temperatureDifference > tolerance){
+
+
+    if (temperatureDifference > 63.0) {
+
+      stepTime = 3000;//<-------------------------------- turns motor on for this long
+      delayTime = 4000;//<------------------------ time for it to exit if statement and restart loop/ system delay time
+    }
+
+    else if (temperatureDifference < 63.0 && temperatureDifference > 20.0) {
+      stepTime = 2000;
+      delayTime = 4000;
+    }
+
+    else if (temperatureDifference < 20.0 && temperatureDifference > 10.0) {
+      stepTime = 1000;
+      delayTime = 4000;
+    }
+
+    else if (temperatureDifference < 10.0 && temperatureDifference > 1.0) {
+      stepTime = 500;
+      delayTime = 8000;
+    }
+
+//    printAverageTemperature();
+     averageTemperature = tempcurrent;
+  // printTemperature(Probe01);
+
+    if (averageTemperature < finalTemperature) {
+      stepHot(stepTime);
+      stepOff();
+      delay(delayTime);
+    }
+    if (averageTemperature > finalTemperature) {
+      stepCold(stepTime);
+      stepOff();
+      delay(delayTime);
+    }
+
+
+
